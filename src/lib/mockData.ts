@@ -119,7 +119,7 @@ export const generateMockComplaintSections = (): ComplaintSection[] => {
     {
       id: "section-parties",
       title: "PARTIES",
-      content: "1. Plaintiff Jane Doe is a natural person and citizen of Texas, residing in Travis County.\n\n2. Defendant TechGiant Electronics Inc. ("TechGiant") is a Delaware corporation with its principal place of business at 1000 Tech Way, San Jose, California 95110.",
+      content: '1. Plaintiff Jane Doe is a natural person and citizen of Texas, residing in Travis County.\n\n2. Defendant TechGiant Electronics Inc. ("TechGiant") is a Delaware corporation with its principal place of business at 1000 Tech Way, San Jose, California 95110.',
       isEditable: true,
     },
     {
@@ -131,7 +131,7 @@ export const generateMockComplaintSections = (): ComplaintSection[] => {
     {
       id: "section-facts",
       title: "FACTUAL ALLEGATIONS",
-      content: "5. In September 2023, Plaintiff purchased a TechPro 5000 tablet for $899.99 from TechGiant's authorized retailer.\n\n6. Within three weeks of purchase, Plaintiff noticed the device becoming excessively hot during normal use.\n\n7. By October 2023, the tablet's back panel began to warp due to the heat, rendering the device unstable when placed on flat surfaces.\n\n8. On October 2, 2023, Plaintiff contacted TechGiant customer service to report the issue and request warranty service.\n\n9. Despite the device being within the one-year warranty period, TechGiant representatives claimed the damage was due to "user mishandling" and refused to replace or repair the device.\n\n10. Subsequent investigation reveals that thousands of TechPro 5000 users have reported identical issues on TechGiant's support forums and on social media platforms.",
+      content: '5. In September 2023, Plaintiff purchased a TechPro 5000 tablet for $899.99 from TechGiant\'s authorized retailer.\n\n6. Within three weeks of purchase, Plaintiff noticed the device becoming excessively hot during normal use.\n\n7. By October 2023, the tablet\'s back panel began to warp due to the heat, rendering the device unstable when placed on flat surfaces.\n\n8. On October 2, 2023, Plaintiff contacted TechGiant customer service to report the issue and request warranty service.\n\n9. Despite the device being within the one-year warranty period, TechGiant representatives claimed the damage was due to "user mishandling" and refused to replace or repair the device.\n\n10. Subsequent investigation reveals that thousands of TechPro 5000 users have reported identical issues on TechGiant\'s support forums and on social media platforms.',
       isEditable: true,
     },
     {
@@ -143,13 +143,13 @@ export const generateMockComplaintSections = (): ComplaintSection[] => {
     {
       id: "section-claims",
       title: "CAUSES OF ACTION",
-      content: "COUNT I: BREACH OF EXPRESS WARRANTY\n\n14. Plaintiff incorporates by reference all preceding allegations as though fully set forth herein.\n\n15. TechGiant expressly warranted that the TechPro 5000 tablets were free from defects in materials and workmanship under normal use for a period of one year from the date of purchase.\n\n16. The battery defect in the TechPro 5000 tablets manifested within the warranty period.\n\n17. TechGiant breached its express warranty by refusing to honor warranty claims for the defective tablets.\n\nCOUNT II: VIOLATION OF THE MAGNUSON-MOSS WARRANTY ACT\n\n18. Plaintiff incorporates by reference all preceding allegations as though fully set forth herein.\n\n19. The TechPro 5000 tablets are consumer products as defined in 15 U.S.C. § 2301(1).\n\n20. TechGiant is a supplier and warrantor as defined in 15 U.S.C. § 2301(4) and (5).\n\n21. TechGiant's refusal to honor its warranty constitutes a violation of the Magnuson-Moss Warranty Act, 15 U.S.C. § 2301 et seq.",
+      content: 'COUNT I: BREACH OF EXPRESS WARRANTY\n\n14. Plaintiff incorporates by reference all preceding allegations as though fully set forth herein.\n\n15. TechGiant expressly warranted that the TechPro 5000 tablets were free from defects in materials and workmanship under normal use for a period of one year from the date of purchase.\n\n16. The battery defect in the TechPro 5000 tablets manifested within the warranty period.\n\n17. TechGiant breached its express warranty by refusing to honor warranty claims for the defective tablets.\n\nCOUNT II: VIOLATION OF THE MAGNUSON-MOSS WARRANTY ACT\n\n18. Plaintiff incorporates by reference all preceding allegations as though fully set forth herein.\n\n19. The TechPro 5000 tablets are consumer products as defined in 15 U.S.C. § 2301(1).\n\n20. TechGiant is a supplier and warrantor as defined in 15 U.S.C. § 2301(4) and (5).\n\n21. TechGiant\'s refusal to honor its warranty constitutes a violation of the Magnuson-Moss Warranty Act, 15 U.S.C. § 2301 et seq.',
       isEditable: true,
     },
     {
       id: "section-prayer",
       title: "PRAYER FOR RELIEF",
-      content: "WHEREFORE, Plaintiff, individually and on behalf of the Class, prays for the following relief:\n\nA. Certification of the proposed Class;\n\nB. Appointment of Plaintiff as representative of the Class;\n\nC. Appointment of Plaintiff's counsel as counsel for the Class;\n\nD. A declaration that TechGiant's actions constitute breach of express warranty;\n\nE. An award of actual, compensatory, and statutory damages;\n\nF. An order requiring TechGiant to replace all defective TechPro 5000 tablets or provide a full refund of the purchase price;\n\nG. An award of reasonable attorneys' fees and costs;\n\nH. Such other and further relief as the Court deems just and proper.",
+      content: 'WHEREFORE, Plaintiff, individually and on behalf of the Class, prays for the following relief:\n\nA. Certification of the proposed Class;\n\nB. Appointment of Plaintiff as representative of the Class;\n\nC. Appointment of Plaintiff\'s counsel as counsel for the Class;\n\nD. A declaration that TechGiant\'s actions constitute breach of express warranty;\n\nE. An award of actual, compensatory, and statutory damages;\n\nF. An order requiring TechGiant to replace all defective TechPro 5000 tablets or provide a full refund of the purchase price;\n\nG. An award of reasonable attorneys\' fees and costs;\n\nH. Such other and further relief as the Court deems just and proper.',
       isEditable: false,
     }
   ];
