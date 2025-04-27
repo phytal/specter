@@ -1,13 +1,7 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { WorkflowSidebar, Step } from "@/components/WorkflowSidebar";
-import FileUpload from "@/components/FileUpload";
-import DocumentReview from "@/components/DocumentReview";
-import ClassMatching from "@/components/ClassMatching";
-import ComplaintDraft from "@/components/ComplaintDraft";
-import ExportPackage from "@/components/ExportPackage";
 import MobileNavBar from "@/components/MobileNavBar";
 import {
   generateMockFacts,
@@ -19,13 +13,17 @@ import {
   ComplaintSection,
   ExportFile,
 } from "@/lib/mockData";
+import UploadEvidenceStep from "@/components/steps/UploadEvidenceStep";
+import DocumentReviewStep from "@/components/steps/DocumentReviewStep";
+import ClassMatchingStep from "@/components/steps/ClassMatchingStep";
+import ComplaintDraftStep from "@/components/steps/ComplaintDraftStep";
+import ExportPackageStep from "@/components/steps/ExportPackageStep";
 
 const Index = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // State for each step
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [facts, setFacts] = useState<Fact[]>([]);
   const [classMatches, setClassMatches] = useState<ClassMatch[]>([]);
@@ -33,7 +31,6 @@ const Index = () => {
   const [complaintSections, setComplaintSections] = useState<ComplaintSection[]>([]);
   const [exportFiles, setExportFiles] = useState<ExportFile[]>([]);
 
-  // Steps definition
   const steps: Step[] = [
     {
       id: 1,
@@ -67,20 +64,16 @@ const Index = () => {
     },
   ];
 
-  // Handle file upload
   const handleFilesSelected = (files: File[]) => {
     setUploadedFiles(files);
   };
 
-  // Move to next step with simulated processing
   const handleNextStep = () => {
     if (currentStep >= steps.length) return;
 
     setIsProcessing(true);
     
-    // Simulate processing time
     setTimeout(() => {
-      // For demo purposes, generate mock data based on the current step
       if (currentStep === 1 && uploadedFiles.length > 0) {
         setFacts(generateMockFacts());
       } else if (currentStep === 2) {
@@ -96,13 +89,11 @@ const Index = () => {
     }, 2000);
   };
 
-  // Go back to previous step
   const handlePreviousStep = () => {
     if (currentStep <= 1) return;
     setCurrentStep(currentStep - 1);
   };
 
-  // Handle step click from sidebar
   const handleStepClick = (step: number) => {
     if (step <= currentStep) {
       setCurrentStep(step);
@@ -110,27 +101,22 @@ const Index = () => {
     }
   };
 
-  // Handle fact updates in document review
   const handleFactsUpdate = (updatedFacts: Fact[]) => {
     setFacts(updatedFacts);
   };
 
-  // Handle class selection
   const handleClassSelect = (classId: string) => {
     setSelectedClassId(classId);
     toast.success("Class action selected successfully!");
   };
 
-  // Handle creating a new class
   const handleCreateNewClass = () => {
     toast("Creating a new class action", {
       description: "Your case will be the first in this class action.",
     });
-    // In a real app, we would create a new class here
     setSelectedClassId("new-class");
   };
 
-  // Handle section update in complaint draft
   const handleSectionUpdate = (id: string, content: string) => {
     setComplaintSections(
       complaintSections.map((section) =>
@@ -140,14 +126,11 @@ const Index = () => {
     toast.success("Section updated successfully");
   };
 
-  // Handle regenerating a section
   const handleRegenerateSection = (id: string) => {
     toast("Regenerating section", {
       description: "This may take a moment...",
     });
-    // In a real app, we would regenerate the section content here
     setTimeout(() => {
-      // For demo purposes, just add a note to the section
       setComplaintSections(
         complaintSections.map((section) =>
           section.id === id
@@ -162,113 +145,64 @@ const Index = () => {
     }, 1500);
   };
 
-  // Handle download
   const handleDownload = (fileType: "complaint" | "exhibits" | "all") => {
     toast.success(`Downloading ${fileType} package`, {
       description: "Your files will download shortly.",
     });
-    // In a real app, we would trigger the actual download here
   };
 
-  // Handle preview
   const handlePreview = () => {
     toast("Opening preview in new tab", {
       description: "The complaint preview will open in a new browser tab.",
     });
-    // In a real app, we would open a preview in a new tab
   };
 
-  // Render current step content
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        return (
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6">Upload Your Evidence</h2>
-            <p className="mb-6 text-gray-600">
-              Upload documents related to your potential class action claim.
-              We accept PDF, Word documents, and images. Your files never leave your device.
-            </p>
-            <FileUpload onFilesSelected={handleFilesSelected} />
-          </div>
-        );
+        return <UploadEvidenceStep onFilesSelected={handleFilesSelected} />;
       case 2:
         return (
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6">Review Extracted Information</h2>
-            <p className="mb-6 text-gray-600">
-              We've analyzed your documents and extracted key information. 
-              Please review and correct any inaccuracies.
-            </p>
-            <DocumentReview
-              documentName={uploadedFiles[0]?.name || "Document.pdf"}
-              extractedFacts={facts}
-              onFactsUpdate={handleFactsUpdate}
-              onRerunExtraction={() => {
-                toast("Re-analyzing document", {
-                  description: "This may take a moment...",
-                });
-                // In a real app, we would re-run the extraction here
-              }}
-              isProcessing={false}
-            />
-          </div>
+          <DocumentReviewStep
+            documentName={uploadedFiles[0]?.name || "Document.pdf"}
+            facts={facts}
+            onFactsUpdate={handleFactsUpdate}
+            isProcessing={isProcessing}
+          />
         );
       case 3:
         return (
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6">Find Matching Class Actions</h2>
-            <p className="mb-6 text-gray-600">
-              Based on your case details, we've found potential matching class actions.
-              Select one to join or create a new class action.
-            </p>
-            <ClassMatching
-              possibleMatches={classMatches}
-              selectedClassId={selectedClassId}
-              onClassSelect={handleClassSelect}
-              onCreateNewClass={handleCreateNewClass}
-              isProcessing={isProcessing}
-            />
-          </div>
+          <ClassMatchingStep
+            matches={classMatches}
+            selectedClassId={selectedClassId}
+            onClassSelect={handleClassSelect}
+            onCreateNewClass={handleCreateNewClass}
+            isProcessing={isProcessing}
+          />
         );
       case 4:
         return (
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6">Review Complaint Draft</h2>
-            <p className="mb-6 text-gray-600">
-              We've generated a legal complaint based on your evidence and the selected class action.
-              Review and edit as needed before finalizing.
-            </p>
-            <ComplaintDraft
-              sections={complaintSections}
-              onSectionUpdate={handleSectionUpdate}
-              isGenerating={isProcessing}
-              onRegenerateSection={handleRegenerateSection}
-            />
-          </div>
+          <ComplaintDraftStep
+            sections={complaintSections}
+            onSectionUpdate={handleSectionUpdate}
+            onRegenerateSection={handleRegenerateSection}
+            isGenerating={isProcessing}
+          />
         );
       case 5:
         return (
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6">Export Your Legal Package</h2>
-            <p className="mb-6 text-gray-600">
-              Your class action complaint package is ready to export.
-              All documents are processed locally on your device for privacy.
-            </p>
-            <ExportPackage
-              files={exportFiles}
-              onDownload={handleDownload}
-              onPreview={handlePreview}
-              isExporting={isProcessing}
-            />
-          </div>
+          <ExportPackageStep
+            files={exportFiles}
+            onDownload={handleDownload}
+            onPreview={handlePreview}
+            isExporting={isProcessing}
+          />
         );
       default:
         return null;
     }
   };
 
-  // Navigation buttons
   const renderNavigationButtons = () => {
     return (
       <div className="flex justify-between mt-8 pt-4 border-t">
@@ -311,7 +245,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Mobile Navigation */}
       <MobileNavBar
         steps={steps}
         currentStep={currentStep}
@@ -320,21 +253,18 @@ const Index = () => {
         onStepClick={handleStepClick}
       />
 
-      {/* Sidebar */}
       <WorkflowSidebar
         steps={steps}
         currentStep={currentStep}
         onStepClick={handleStepClick}
       />
 
-      {/* Main Content */}
       <div className="flex-1 p-4 md:p-8 overflow-y-auto flex flex-col min-h-screen">
         <div className="container mx-auto flex flex-col flex-1">
-          <div>
+          <div className="flex-1">
             {renderStepContent()}
             {renderNavigationButtons()}
           </div>
-          {/* Footer */}
           <div className="pt-4 border-t text-center text-sm text-gray-500 mt-auto">
             <p>
               Class-Action Copilot processes all data on-device for privacy.
