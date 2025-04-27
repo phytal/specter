@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import UploadEvidenceStep from "@/components/steps/UploadEvidenceStep";
+import WorkflowNavigation from "@/components/WorkflowNavigation";
 import DocumentReviewStep from "@/components/steps/DocumentReviewStep";
 import ClassMatchingStep from "@/components/steps/ClassMatchingStep";
 import ComplaintDraftStep from "@/components/steps/ComplaintDraftStep";
@@ -29,7 +30,7 @@ interface WorkflowStepsProps {
   onPreview: () => void;
 }
 
-const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
+const WorkflowSteps: React.FC<WorkflowStepsProps & { onNext: () => void; onPrevious: () => void }> = ({
   currentStep,
   steps,
   isProcessing,
@@ -46,6 +47,8 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
   exportFiles,
   onDownload,
   onPreview,
+  onNext,
+  onPrevious,
 }) => {
   const renderStepContent = () => {
     switch (currentStep) {
@@ -60,16 +63,22 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
             isProcessing={isProcessing}
           />
         );
-      case 3:
+      case 3: {
+        // SerpApi-powered matching
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { useSerpApiClassMatches } = require("@/hooks/useSerpApiClassMatches");
+        const { matches, loading, error } = useSerpApiClassMatches(facts, currentStep === 3);
         return (
           <ClassMatchingStep
-            matches={[]}
+            matches={matches}
             selectedClassId={selectedClassId}
             onClassSelect={onClassSelect}
             onCreateNewClass={onCreateNewClass}
-            isProcessing={isProcessing}
+            isProcessing={loading}
+            error={error}
           />
         );
+      }
       case 4:
         return (
           <ComplaintDraftStep
@@ -98,6 +107,15 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
       <div className="container mx-auto flex flex-col flex-1">
         <div className="flex-1">
           {renderStepContent()}
+          <WorkflowNavigation
+            currentStep={currentStep}
+            totalSteps={steps.length}
+            isProcessing={isProcessing}
+            uploadedFiles={uploadedFiles}
+            selectedClassId={selectedClassId}
+            onNext={onNext}
+            onPrevious={onPrevious}
+          />
         </div>
         <div className="pt-4 border-t text-center text-sm text-gray-500 mt-auto">
           <p>

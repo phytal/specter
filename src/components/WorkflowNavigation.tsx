@@ -23,40 +23,41 @@ const WorkflowNavigation: React.FC<WorkflowNavigationProps> = ({
   onPrevious,
 }) => {
   return (
-    <div className="flex justify-between mt-8 pt-4 border-t">
-      <Button
-        variant="outline"
-        onClick={onPrevious}
-        disabled={currentStep === 1 || isProcessing}
-        className="px-8"
-      >
-        Back
-      </Button>
-      
-      {currentStep < totalSteps ? (
+    <div className="flex justify-center mt-8 pt-4">
+      <div className="flex flex-row gap-4">
         <Button
-          onClick={onNext}
-          disabled={
-            (currentStep === 1 && uploadedFiles.length === 0) ||
-            (currentStep === 3 && !selectedClassId) ||
-            isProcessing
-          }
-          className="px-8 bg-teal-700 hover:bg-teal-800"
+          variant="outline"
+          onClick={onPrevious}
+          disabled={currentStep === 1 || isProcessing}
+          className="px-8"
         >
-          {isProcessing ? "Processing..." : "Next"}
+          Back
         </Button>
-      ) : (
-        <Button
-          onClick={() => {
-            toast.success("Process completed!", {
-              description: "Thank you for using Class-Action Copilot.",
-            });
-          }}
-          className="px-8 bg-amber hover:bg-amber-600 text-white"
-        >
-          Finish
-        </Button>
-      )}
+        {currentStep < totalSteps ? (
+          <Button
+            onClick={onNext}
+            disabled={
+              (currentStep === 1 && uploadedFiles.length === 0) ||
+              (currentStep === 3 && !selectedClassId) ||
+              isProcessing
+            }
+            className="px-8 bg-teal-700 hover:bg-teal-800"
+          >
+            {isProcessing ? "Processing..." : "Next"}
+          </Button>
+        ) : (
+          <Button
+            onClick={() => {
+              toast.success("Process completed!", {
+                description: "Thank you for using Class-Action Copilot.",
+              });
+            }}
+            className="px-8 bg-amber hover:bg-amber-600 text-white"
+          >
+            Finish
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

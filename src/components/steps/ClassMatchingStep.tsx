@@ -9,6 +9,7 @@ interface ClassMatchingStepProps {
   onClassSelect: (classId: string) => void;
   onCreateNewClass: () => void;
   isProcessing: boolean;
+  error?: string | null;
 }
 
 const ClassMatchingStep: React.FC<ClassMatchingStepProps> = ({
@@ -17,6 +18,7 @@ const ClassMatchingStep: React.FC<ClassMatchingStepProps> = ({
   onClassSelect,
   onCreateNewClass,
   isProcessing,
+  error,
 }) => {
   return (
     <div className="max-w-4xl mx-auto">
@@ -25,6 +27,11 @@ const ClassMatchingStep: React.FC<ClassMatchingStepProps> = ({
         Based on your case details, we've found potential matching class actions.
         Select one to join or create a new class action.
       </p>
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+          {error}
+        </div>
+      )}
       <ClassMatching
         possibleMatches={matches}
         selectedClassId={selectedClassId}

@@ -129,34 +129,29 @@ const Index = () => {
         onStepClick={handleStepClick}
       />
 
-      <WorkflowSteps
-        currentStep={currentStep}
-        steps={steps}
-        isProcessing={isProcessing}
-        uploadedFiles={uploadedFiles}
-        facts={facts}
-        onFilesSelected={setUploadedFiles}
-        onFactsUpdate={setFacts}
-        onClassSelect={setSelectedClassId}
-        onCreateNewClass={handleCreateNewClass}
-        selectedClassId={selectedClassId}
-        complaintSections={complaintSections}
-        onSectionUpdate={handleSectionUpdate}
-        onRegenerateSection={handleRegenerateSection}
-        exportFiles={exportFiles}
-        onDownload={handleDownload}
-        onPreview={handlePreview}
-      />
+      <div className="flex-1 flex flex-col">
+        <WorkflowSteps
+          currentStep={currentStep}
+          steps={steps}
+          isProcessing={isProcessing}
+          uploadedFiles={uploadedFiles}
+          facts={facts}
+          onFilesSelected={setUploadedFiles}
+          onFactsUpdate={setFacts}
+          onClassSelect={setSelectedClassId}
+          onCreateNewClass={handleCreateNewClass}
+          selectedClassId={selectedClassId}
+          complaintSections={complaintSections}
+          onSectionUpdate={handleSectionUpdate}
+          onRegenerateSection={handleRegenerateSection}
+          exportFiles={exportFiles}
+          onDownload={handleDownload}
+          onPreview={handlePreview}
+          onNext={handleNextStep}
+          onPrevious={handlePreviousStep}
+        />
 
-      <WorkflowNavigation
-        currentStep={currentStep}
-        totalSteps={steps.length}
-        isProcessing={isProcessing}
-        uploadedFiles={uploadedFiles}
-        selectedClassId={selectedClassId}
-        onNext={handleNextStep}
-        onPrevious={handlePreviousStep}
-      />
+      </div>
     </div>
   );
 };
