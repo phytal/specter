@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import UploadEvidenceStep from "@/components/steps/UploadEvidenceStep";
+import { useSerpApiClassMatches } from "@/hooks/useSerpApiClassMatches";
 import WorkflowNavigation from "@/components/WorkflowNavigation";
 import DocumentReviewStep from "@/components/steps/DocumentReviewStep";
 import ClassMatchingStep from "@/components/steps/ClassMatchingStep";
@@ -65,8 +66,6 @@ const WorkflowSteps: React.FC<WorkflowStepsProps & { onNext: () => void; onPrevi
         );
       case 3: {
         // SerpApi-powered matching
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { useSerpApiClassMatches } = require("@/hooks/useSerpApiClassMatches");
         const { matches, loading, error } = useSerpApiClassMatches(facts, currentStep === 3);
         return (
           <ClassMatchingStep

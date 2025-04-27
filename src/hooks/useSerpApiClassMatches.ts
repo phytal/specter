@@ -19,7 +19,7 @@ interface SerpApiResponse {
   organic_results: OrganicResult[];
 }
 
-const API_KEY = process.env.REACT_APP_SERPAPI_KEY;
+const API_KEY = import.meta.env.VITE_SERPAPI_KEY;
 
 /**
  * Custom hook to fetch class action matches from SerpApi using extracted facts as keywords.
