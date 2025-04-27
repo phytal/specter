@@ -328,13 +328,14 @@ const Index = () => {
       />
 
       {/* Main Content */}
-      <div className="flex-1 p-4 md:p-8 overflow-y-auto">
-        <div className="container mx-auto">
-          {renderStepContent()}
-          {renderNavigationButtons()}
-
+      <div className="flex-1 p-4 md:p-8 overflow-y-auto flex flex-col min-h-screen">
+        <div className="container mx-auto flex flex-col flex-1">
+          <div>
+            {renderStepContent()}
+            {renderNavigationButtons()}
+          </div>
           {/* Footer */}
-          <div className="mt-12 pt-4 border-t text-center text-sm text-gray-500">
+          <div className="pt-4 border-t text-center text-sm text-gray-500 mt-auto">
             <p>
               Class-Action Copilot processes all data on-device for privacy.
               Always consult with a licensed attorney before legal filings.

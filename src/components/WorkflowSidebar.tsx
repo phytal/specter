@@ -79,13 +79,25 @@ export const WorkflowSidebar: React.FC<WorkflowSidebarProps> = ({
         ))}
       </div>
 
-      <div className="absolute bottom-4 left-4 right-4">
+      {/* Progress & Privacy section - now in its own area */}
+      <div className="mt-auto px-4 pt-6 pb-4 border-t border-teal-100">
         <div className="text-xs text-teal-600 mb-2">
           <strong>Privacy Guarantee:</strong> Your documents stay on your device.
         </div>
-        <div className="h-1 w-full bg-teal-100 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-teal-600 transition-all duration-500" 
+        {/* Progress percentage marker */}
+        {steps.length > 0 && (
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-teal-700 font-medium">
+              Progress
+            </span>
+            <span className="text-xs text-teal-700 font-semibold">
+              {Math.round((currentStep / steps.length) * 100)}%
+            </span>
+          </div>
+        )}
+        <div className="h-2 w-full bg-teal-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-teal-600 transition-all duration-500"
             style={{ width: `${(currentStep / steps.length) * 100}%` }}
           ></div>
         </div>
