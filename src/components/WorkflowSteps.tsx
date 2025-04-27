@@ -11,9 +11,9 @@ import ComplaintDraftStep from "@/components/steps/ComplaintDraftStep";
 import ExportPackageStep from "@/components/steps/ExportPackageStep";
 import { Step } from "@/components/WorkflowSidebar";
 import { openai } from "@/lib/openai";
-import { Fact, ComplaintSection, ExportFile } from "@/lib/mockData";
 import type { FirecrawlContext } from "@/components/ClassMatching";
 import type { ClassMatch } from "@/lib/mockData";
+import { Fact, ComplaintSection, ExportFile } from "@/lib/mockData";
 
 interface WorkflowStepsProps {
   currentStep: number;
@@ -27,6 +27,7 @@ interface WorkflowStepsProps {
   onCreateNewClass: () => void;
   selectedClassId: string | null;
   complaintSections: ComplaintSection[];
+  setComplaintSections?: (sections: ComplaintSection[]) => void;
   onSectionUpdate: (id: string, content: string) => void;
   onRegenerateSection: (id: string) => void;
   exportFiles: ExportFile[];
@@ -34,9 +35,7 @@ interface WorkflowStepsProps {
   onPreview: () => void;
   onNext: () => void;
   onPrevious: () => void;
-  setComplaintSections: (sections: ComplaintSection[]) => void;
-  searchQuery: string;
-  onSearchQueryExtracted: (searchQuery: string) => void;
+  onSearchQueryExtracted: (query: string) => void;
 }
 
 const WorkflowStepsComponent: React.FC<WorkflowStepsProps> = memo(
@@ -52,6 +51,7 @@ const WorkflowStepsComponent: React.FC<WorkflowStepsProps> = memo(
     onCreateNewClass,
     selectedClassId,
     complaintSections,
+    setComplaintSections, // Add this prop
     onSectionUpdate,
     onRegenerateSection,
     exportFiles,
@@ -59,74 +59,24 @@ const WorkflowStepsComponent: React.FC<WorkflowStepsProps> = memo(
     onPreview,
     onNext,
     onPrevious,
-    setComplaintSections,
-    searchQuery,
     onSearchQueryExtracted,
   }) => {
+    // Track extracted PDF text
     const [pdfText, setPdfText] = React.useState<string>("");
-    const [firecrawlResults, setFirecrawlResults] = React.useState<Record<string, FirecrawlContext>>({});
-    const [isGeneratingDraft, setIsGeneratingDraft] = React.useState(false);
-    const [isFirecrawlLoading, setIsFirecrawlLoading] = React.useState(false);
+    // Store Firecrawl results (plain text format)
+    const [firecrawlResults, setFirecrawlResults] = React.useState<Record<string, string>>({});
+    // Modal state for raw context modal (fixes hook violation)
+    const [rawContextModal, setRawContextModal] = React.useState({
+      open: false,
+      context: null,
+      match: null,
+    });
 
+    // Hook for SERP API class matches
     const { matches, loading, error } = useSerpApiClassMatches(
-      searchQuery,
+      pdfText,
       currentStep === 3
     );
-
-    React.useEffect(() => {
-      const generateInitialComplaint = async () => {
-        if (currentStep === 4 && complaintSections.length === 0 && !isGeneratingDraft) {
-          setIsGeneratingDraft(true);
-          toast("Generating initial complaint draft", { description: "This may take a moment..." });
-          try {
-            const firecrawlText = matches
-              .map(match => {
-                const context = firecrawlResults[match.id];
-                if (!context || context.error) return `### ${match.name}\nError fetching context or no context available.`;
-                const content = context.rawData?.markdown || context.rawData?.text || context.text || JSON.stringify(context.rawData);
-                return `### ${match.name}\n${content}`;
-              })
-              .join("\n\n");
-
-            const consolidatedInfo = `
-## Relevant Class Action Contexts:
-${firecrawlText}
-
-## Raw Text from Uploaded Documents:
-${pdfText}
-            `;
-            const prompt = `You are a legal assistant. Draft a clear and concise class action lawsuit complaint as a markdown document based *only* on the provided information. Use standard legal section headings (e.g., INTRODUCTION, PARTIES, JURISDICTION AND VENUE, FACTUAL ALLEGATIONS, CLASS ACTION ALLEGATIONS, CAUSES OF ACTION, PRAYER FOR RELIEF) and numbered paragraphs within each section. Ensure the output is valid markdown.
-
-${consolidatedInfo}`;
-
-            const stream = await openai.chat.completions.create({
-              model: "webai-llm",
-              messages: [{ role: "user", content: prompt }],
-              stream: true,
-            });
-
-            let markdownDraft = "";
-            for await (const chunk of stream) {
-              const choiceAny = chunk.choices?.[0] as any;
-              const rawToken = choiceAny.delta?.content ?? choiceAny.message?.content ?? "";
-              markdownDraft += rawToken;
-            }
-
-            setComplaintSections([{ id: 'draft', title: 'Draft', content: markdownDraft, isEditable: true }]);
-            toast.success("Initial complaint draft generated");
-
-          } catch (err) {
-            console.error("Initial LLM complaint draft error:", err);
-            toast.error("Failed to generate initial draft");
-            setComplaintSections([{ id: 'error', title: 'Error', content: 'Failed to generate draft. Please try again or contact support.', isEditable: false }]);
-          } finally {
-            setIsGeneratingDraft(false);
-          }
-        }
-      };
-
-      generateInitialComplaint();
-    }, [currentStep, pdfText, matches, firecrawlResults, complaintSections.length, isGeneratingDraft, setComplaintSections]);
 
     const renderStepContent = React.useCallback(() => {
       switch (currentStep) {
@@ -142,11 +92,11 @@ ${consolidatedInfo}`;
           console.log("WorkflowSteps onSearchQueryExtracted:", onSearchQueryExtracted);
           return (
             <DocumentReviewStep
-              documentName={uploadedFiles[0]?.name || ""}
-              file={uploadedFiles[0]}
+              documentName={uploadedFiles[0]?.name || "Document.pdf"}
               facts={facts}
               onFactsUpdate={onFactsUpdate}
               isProcessing={isProcessing}
+              file={uploadedFiles[0]}
               rawText={pdfText}
               onSearchQueryExtracted={onSearchQueryExtracted}
             />
@@ -158,14 +108,11 @@ ${consolidatedInfo}`;
               selectedClassId={selectedClassId}
               onClassSelect={onClassSelect}
               onCreateNewClass={onCreateNewClass}
-              isProcessing={loading}
-              error={error}
               onNext={onNext}
-              rawContextModal={null}
-              setRawContextModal={null}
-              onFirecrawlResultsUpdate={setFirecrawlResults}
               firecrawlResults={firecrawlResults}
-              onLoadingUpdate={setIsFirecrawlLoading} // Pass the setter for the loading state
+              firecrawlProgress={0}
+              rawContextModal={rawContextModal}
+              setRawContextModal={setRawContextModal}
             />
           );
         case 4:
@@ -173,30 +120,57 @@ ${consolidatedInfo}`;
             <ComplaintDraftStep
               sections={complaintSections}
               onSectionUpdate={onSectionUpdate}
+              facts={facts}
+              selectedClassId={selectedClassId}
+              firecrawlResults={firecrawlResults}
+              setComplaintSections={setComplaintSections}
               onRegenerateSection={async (id: string) => {
-                toast("Regenerating section", { description: "This may take a moment..." });
                 try {
                   const section = complaintSections.find((s) => s.id === id);
-                  const prompt = `Draft complaint section '${section?.title}' using facts: ${JSON.stringify(facts)}. The output should be formatted using Markdown.`;
-                  const stream = await openai.chat.completions.create({
+                  if (!section) return;
+
+                  toast("Regenerating section", { 
+                    description: "This may take a moment..." 
+                  });
+                  
+                  // Get the firecrawl results text for the selected class
+                  const classActionText = firecrawlResults[selectedClassId] || "";
+                  
+                  // Prepare facts data
+                  const factsData = facts.map(fact => `${fact.type}: ${fact.value}`).join("\n");
+                  
+                  // Create a targeted prompt for the specific section
+                  const prompt = `
+Regenerate the '${section.title}' section of a class action complaint.
+
+FACTS FROM EVIDENCE:
+${factsData}
+
+CLASS ACTION INFORMATION:
+${classActionText}
+
+Original section content:
+${section.content}
+
+Improve this section with more specific details, stronger legal arguments, and clearer structure.
+Focus only on this section. Be specific and detailed with legal language appropriate for this section.
+`;
+
+                  const completion = await openai.chat.completions.create({
                     model: "webai-llm",
                     messages: [{ role: "user", content: prompt }],
-                    stream: true,
                   });
-                  let text = "";
-                  for await (const chunk of stream) {
-                    const choiceAny = chunk.choices?.[0] as any;
-                    const rawToken = choiceAny.delta?.content ?? choiceAny.message?.content ?? "";
-                    text += rawToken;
-                    onSectionUpdate(id, text);
-                  }
-                  toast.success("Section regenerated");
-                } catch (err) {
-                  console.error("LLM complaint draft error:", err);
-                  toast.error("Regeneration failed");
+                  
+                  const regeneratedContent = completion.choices[0].message.content || "";
+                  
+                  // Update the section with regenerated content
+                  onSectionUpdate(id, regeneratedContent);
+                  toast.success("Section regenerated successfully");
+                } catch (error) {
+                  console.error("Error regenerating section:", error);
+                  toast.error("Failed to regenerate section");
                 }
               }}
-              isGenerating={isGeneratingDraft || isProcessing}
             />
           );
         case 5:
@@ -216,8 +190,6 @@ ${consolidatedInfo}`;
       uploadedFiles,
       facts,
       matches,
-      loading,
-      error,
       selectedClassId,
       complaintSections,
       exportFiles,
@@ -231,11 +203,8 @@ ${consolidatedInfo}`;
       onDownload,
       onPreview,
       onNext,
-      pdfText,
-      firecrawlResults,
-      isGeneratingDraft,
-      setComplaintSections,
-      setIsFirecrawlLoading, // Add setter to dependency array
+      rawContextModal,
+      onSearchQueryExtracted,
     ]);
 
     return (

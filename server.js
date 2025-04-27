@@ -19,7 +19,10 @@ const upload = multer({ dest: 'uploads/' });
 app.get('/api/class-actions', async (req, res) => {
   const SERP_API_KEY = process.env.SERPAPI_API_KEY;
   const SERP_API_URL = 'https://serpapi.com/search.json';
-  const query = 'Facebook class action lawsuit';
+  const query = req.query.query;
+  if (!query || typeof query !== 'string' || !query.trim()) {
+    return res.status(400).json({ error: 'Missing or invalid search query.' });
+  }
 
   if (!SERP_API_KEY) {
     return res.status(500).json({ error: 'SerpApi API key not configured.' });

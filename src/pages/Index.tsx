@@ -26,7 +26,6 @@ const Index = () => {
     handleNextStep,
     handlePreviousStep,
   } = useWorkflowState();
-  console.log("Index searchQuery and setSearchQuery:", searchQuery, setSearchQuery);
 
   const steps: Step[] = [
     {

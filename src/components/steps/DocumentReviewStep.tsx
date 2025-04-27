@@ -53,7 +53,7 @@ Document Content:
 
 Create a JSON object with two top-level keys:
 - "facts": an array of objects, each with id (string), label (string), value (string), confidence (0–1), isEdited (boolean).
-- "searchQuery": a single string representing a search query suitable for finding relevant class action lawsuits based on this content.
+- "searchQuery": a short concise string with max 5 words to query for a class action lawsuit on google.com
 
 Respond ONLY with valid JSON, no extra text.`;
       const stream = await openai.chat.completions.create({

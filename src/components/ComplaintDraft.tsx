@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { Loader } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
 interface ComplaintSection {
   id: string;
@@ -71,18 +71,92 @@ const ComplaintDraft: React.FC<ComplaintDraftProps> = ({
           <h2 className="text-xl font-semibold">Complaint Draft</h2>
           <TabsList>
             <TabsTrigger value="preview">Preview</TabsTrigger>
+            <TabsTrigger value="sections">Edit Sections</TabsTrigger>
           </TabsList>
         </div>
 
         <TabsContent value="preview" className="mt-0">
-          <div className="bg-white shadow-lg rounded-md p-8 md:p-12 max-w-4xl mx-auto border border-gray-200">
-            <article className="prose prose-sm sm:prose-base lg:prose-lg max-w-none prose-headings:font-semibold prose-headings:mt-6 prose-headings:mb-2 prose-p:leading-relaxed">
-              <h1 className="text-2xl font-bold text-center mb-8 border-b pb-2">COMPLAINT</h1>
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {sections.map(s => `## ${s.title}\n\n${s.content}`).join('\n\n')}
-              </ReactMarkdown>
-            </article>
-          </div>
+          <Card>
+            <CardContent className="p-6">
+              <div className="prose max-w-none">
+                <h1 className="text-2xl font-bold text-center mb-6">COMPLAINT</h1>
+                {sections.map((section, index) => (
+                  <div key={section.id} className="mb-8">
+                    <h2 className="text-xl font-semibold mb-2">{section.title}</h2>
+                    <div className="whitespace-pre-line">
+                      {section.content}
+                    </div>
+                    {index < sections.length - 1 && <Separator className="my-6" />}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="sections" className="mt-0 space-y-4">
+          {sections.map((section) => (
+            <Card key={section.id}>
+              <CardContent className="p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-medium">{section.title}</h3>
+                  <div className="flex gap-2">
+                    {section.isEditable && editingSectionId !== section.id && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditClick(section)}
+                        className="text-teal-700 border-teal-700 hover:bg-teal-50"
+                      >
+                        Edit
+                      </Button>
+                    )}
+                    {onRegenerateSection && section.isEditable && (
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onRegenerateSection(section.id)}
+                        className="text-amber border-amber hover:bg-amber-50"
+                      >
+                        Regenerate
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {editingSectionId === section.id ? (
+                  <div className="space-y-4">
+                    <Textarea
+                      value={editingContent}
+                      onChange={(e) => setEditingContent(e.target.value)}
+                      rows={10}
+                      className="w-full"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button 
+                        variant="outline"
+                        size="sm" 
+                        onClick={handleCancelClick}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        onClick={handleSaveClick}
+                        className="bg-teal-700 hover:bg-teal-800"
+                      >
+                        Save Changes
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="whitespace-pre-line line-clamp-3">
+                    {section.content}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
         </TabsContent>
       </Tabs>
     </div>

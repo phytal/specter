@@ -9,6 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 interface ClassMatch {
   id: string;
@@ -74,7 +75,7 @@ export interface FirecrawlContext {
   rawData?: FirecrawlRawData;
 }
 
-interface ClassMatchingProps {
+export interface ClassMatchingProps {
   matches: ClassMatch[];
   selectedClassId: string | null;
   onClassSelect: (classId: string) => void;
@@ -92,8 +93,7 @@ interface ClassMatchingProps {
     context: FirecrawlContext | null;
     match: ClassMatch | null;
   }) => void;
-  onFirecrawlResultsUpdate: (results: Record<string, FirecrawlContext>) => void;
-  onLoadingUpdate: (isLoading: boolean) => void; // Add this prop
+  setFirecrawlResults?: (results: Record<string, string>) => void;
 }
 
 const ClassMatching: React.FC<ClassMatchingProps> = ({
@@ -106,8 +106,7 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
   firecrawlProgress = 0,
   rawContextModal,
   setRawContextModal,
-  onFirecrawlResultsUpdate,
-  onLoadingUpdate, // Destructure the new prop
+  setFirecrawlResults,
 }) => {
   const [hoveredMatch, setHoveredMatch] = useState<string | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
@@ -115,11 +114,6 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
   const [pendingRequests, setPendingRequests] = useState(0); // Track number of pending requests
   const [localFirecrawlResults, setLocalFirecrawlResults] =
     useState<Record<string, FirecrawlContext>>(firecrawlResults);
-
-  // Report loading state changes up to the parent
-  useEffect(() => {
-    onLoadingUpdate(isLoading);
-  }, [isLoading, onLoadingUpdate]);
 
   // Load cached data from localStorage on component mount
   useEffect(() => {
@@ -137,6 +131,7 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
       console.error("[Firecrawl] Error loading cached data:", e);
     }
   }, []);
+
   useEffect(() => {
     const processMatches = async () => {
       // Filter matches to make sure they all have required fields to avoid empty cards
@@ -146,7 +141,7 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
 
       // Set initial pending request count and loading state
       const requestsToMake = validMatches.filter(
-        (match) => match.url && !localFirecrawlResults[match.id] // Check against local state
+        (match) => match.url && !firecrawlResults[match.id]
       ).length;
       setPendingRequests(requestsToMake);
       setIsLoading(requestsToMake > 0);
@@ -154,17 +149,12 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
       // If no requests to make, we're done loading
       if (requestsToMake === 0) {
         setIsLoading(false);
-        // If no requests needed, ensure parent has the current (potentially cached) results
-        onFirecrawlResultsUpdate(localFirecrawlResults);
         return;
       }
 
-      let updatedResults = { ...localFirecrawlResults }; // Work with a local copy within the effect
-      let requestsCompleted = 0;
-
       // For each valid match, check if we need to fetch Firecrawl data
       for (const match of validMatches) {
-        if (match.url && !localFirecrawlResults[match.id]) {
+        if (match.url && !firecrawlResults[match.id]) {
           try {
             console.log(
               `[Firecrawl] Fetching data for ${match.id} with URL:`,
@@ -245,27 +235,12 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
               match.firecrawlContext = context;
 
               // Update local state and cache in localStorage
-              updatedResults[match.id] = context; // Update the local copy
-            } else {
-              // Handle fetch error, maybe add an error context
-              updatedResults[match.id] = { error: `Failed to fetch: ${resp.statusText}` };
-            }
-          } catch (e: any) {
-            console.error(
-              `[Firecrawl] Error fetching data for ${match.id}:`,
-              e
-            );
-            // Add error context on exception
-            updatedResults[match.id] = { error: `Fetch exception: ${e.message}` };
-          } finally {
-            // Decrement pending requests count after each request completes (success or failure)
-            requestsCompleted++;
-            setPendingRequests((prev) => prev - 1);
-            // Check if all requests (that were initially needed) are done
-            if (requestsCompleted === requestsToMake) {
-              setIsLoading(false);
-              setLocalFirecrawlResults(updatedResults); // Update local state
-              onFirecrawlResultsUpdate(updatedResults); // Pass final results up
+              const updatedResults = {
+                ...localFirecrawlResults,
+                [match.id]: context,
+              };
+              setLocalFirecrawlResults(updatedResults);
+
               // Cache to localStorage
               try {
                 localStorage.setItem(
@@ -276,6 +251,21 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
                 console.error("[Firecrawl] Error caching data:", e);
               }
             }
+          } catch (e) {
+            console.error(
+              `[Firecrawl] Error fetching data for ${match.id}:`,
+              e
+            );
+          } finally {
+            // Decrement pending requests count after each request completes (success or failure)
+            setPendingRequests((prev) => {
+              const newCount = prev - 1;
+              // When no more pending requests, set loading to false
+              if (newCount <= 0) {
+                setIsLoading(false);
+              }
+              return newCount;
+            });
           }
         }
       }
@@ -286,6 +276,76 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matches]);
 
+  const handleFirecrawl = async (match: ClassMatch) => {
+    if (!match?.url) {
+      toast.error("No URL available for this match");
+      return;
+    }
+
+    // Show loading state
+    setFirecrawlProgress(33);
+    toast("Processing class action data...", {
+      description: "Extracting context from similar cases.",
+    });
+
+    try {
+      // Simulate API call - replace with actual API call later
+      setTimeout(() => {
+        setFirecrawlProgress(66);
+
+        // Store the raw text result from firecrawl
+        const rawResult = `Class Action: ${match.name}\n\n${match.description}\n\nDetails: This is a class action lawsuit against ${
+          match.defendant || "the defendant"
+        } regarding ${
+          match.claim || match.description
+        }. Settlement amount: ${
+          match.settlement || "pending"
+        }. Filing deadline: ${
+          match.deadline || "N/A"
+        }. Case number: ${match.caseNumber || "Not available"}.`;
+
+        // Store the raw text in the firecrawl results as a plain string
+        if (typeof firecrawlResults === "object") {
+          // If firecrawlResults is already the right type (Record<string, string>)
+          if (setFirecrawlResults) {
+            setFirecrawlResults((prev) => ({
+              ...prev,
+              [match.id]: rawResult,
+            }));
+          } else {
+            // Store in local state if there's no prop function
+            setLocalFirecrawlResults((prev) => {
+              const updated = { ...prev };
+              updated[match.id] = { text: rawResult } as any;
+              return updated;
+            });
+          }
+        }
+
+        setFirecrawlProgress(100);
+
+        // Show success message
+        toast.success("Class action context extracted", {
+          description: "You can now generate your complaint draft.",
+        });
+
+        // Auto-select the match
+        onClassSelect(match.id);
+
+        // Auto-advance after 1.5 seconds
+        setTimeout(() => {
+          onNext();
+        }, 1500);
+      }, 2000);
+    } catch (error) {
+      console.error("Error fetching firecrawl data:", error);
+      toast.error("Failed to extract class data", {
+        description: "Please try selecting a different class action.",
+      });
+      setFirecrawlProgress(0);
+    }
+  };
+
   return (
     <div>
       {isLoading ? (
@@ -294,7 +354,8 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
           <Loader className="h-8 w-8 animate-spin text-teal-600" />
           <p className="text-lg font-medium">Loading class action data...</p>
           <p className="text-sm text-gray-500">
-            Fetching information from {pendingRequests} {pendingRequests === 1 ? 'source' : 'sources'}
+            Fetching information from {pendingRequests}{" "}
+            {pendingRequests === 1 ? "source" : "sources"}
           </p>
         </div>
       ) : matches.length === 0 ? (
@@ -345,7 +406,7 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
                             </Badge>
                           </div>
                           <p className="text-gray-700 mb-4 whitespace-pre-line max-h-32 overflow-y-auto">
-                            {match.description}
+                            {context.text || match.description}
                           </p>
                           <div className="mb-4">
                             <div className="flex justify-between text-sm text-gray-500 mb-1">
@@ -440,7 +501,7 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
                                     setRawContextModal({
                                       open: true,
                                       context: context,
-                                      match: match
+                                      match: match,
                                     });
                                   }}
                                 >
