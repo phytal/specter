@@ -21,9 +21,12 @@ const Index = () => {
     complaintSections,
     setComplaintSections,
     exportFiles,
+    searchQuery,
+    setSearchQuery,
     handleNextStep,
     handlePreviousStep,
   } = useWorkflowState();
+  console.log("Index searchQuery and setSearchQuery:", searchQuery, setSearchQuery);
 
   const steps: Step[] = [
     {
@@ -141,8 +144,11 @@ const Index = () => {
           onCreateNewClass={handleCreateNewClass}
           selectedClassId={selectedClassId}
           complaintSections={complaintSections}
+          setComplaintSections={setComplaintSections}
           onSectionUpdate={handleSectionUpdate}
           onRegenerateSection={handleRegenerateSection}
+          searchQuery={searchQuery}
+          onSearchQueryExtracted={setSearchQuery}
           exportFiles={exportFiles}
           onDownload={handleDownload}
           onPreview={handlePreview}

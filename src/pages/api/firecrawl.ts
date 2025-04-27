@@ -25,7 +25,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
       },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({
+        url,
+        formats: ["markdown", "html", "rawHtml", "links", "screenshot", "json"],
+        onlyMainContent: true,
+        blockAds: true,
+        skipTlsVerification: false,
+        timeout: 60000
+      }),
     });
     const data = await firecrawlRes.json();
     console.log('[FIRECRAWL API] Firecrawl API response:', JSON.stringify(data, null, 2));

@@ -81,6 +81,9 @@ export async function extractFactsFromPDF(file: File): Promise<Fact[]> {
 
 import * as pdfjsLib from "pdfjs-dist";
 
+// Use the worker from the public directory
+pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
+
 interface TextItem {
   str: string;
   dir: string;
@@ -95,12 +98,10 @@ interface TextContent {
   styles: Record<string, unknown>;
 }
 
-async function extractTextFromPDF(arrayBuffer: ArrayBuffer): Promise<string> {
-  // Set worker path for pdf.js
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-
+export async function extractTextFromPDF(arrayBuffer: ArrayBuffer): Promise<string> {
+  // Worker is set globally above for Vite compatibility
   try {
-    // Load the PDF document
+    // Load the PDF document (workerSrc is set globally above)
     const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
     const pdf = await loadingTask.promise;
 

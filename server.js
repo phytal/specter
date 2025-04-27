@@ -76,31 +76,37 @@ app.post('/api/firecrawl', express.json(), async (req, res) => {
   };
 
   try {
-    // Enhanced scraping parameters with maximum context extraction
+    // Enhanced scraping parameters with maximum context extraction (using jsonOptions per Firecrawl /scrape spec)
     const scrapingOptions = {
       url,
-      formats: ["markdown", "links", "html", "screenshot", "metadata", "json"], // Get all available formats
-      onlyMainContent: false, // Get the full page content
-      waitFor: 5000, // Wait longer for dynamic content (5 seconds)
-      skipImageSize: false, // Include images for richer context
-      removeBase64Images: false, // Keep all images in the output
-      blockAds: true, // Block ads and cookie popups for cleaner content
-      insecure: true, // Skip TLS verification for more reliable scraping
-      timeout: 60000, // Longer timeout for thorough scraping (60 seconds)
-      extract: {
-        schema: extractionSchema,
-        prompt: "Extract very detailed and comprehensive information about this class action lawsuit, including specific settlement amounts, exact payout figures, precise filing/claim deadlines, all eligibility criteria, list of participating law firms, settlement administrators, case numbers, court information, and any other critical details that would be relevant for someone considering joining this lawsuit."
-      },
-      // Add actions to extract more content
+      formats: [
+        "markdown",
+        "html",
+        "rawHtml",
+        "links",
+        "screenshot",
+        "json"
+      ],
+      onlyMainContent: true,
+      waitFor: 5000,
+      blockAds: true,
+      skipTlsVerification: false,
+      timeout: 90000,
+      removeBase64Images: false,
+      proxy: "stealth",
       actions: [
-        { wait: 2000 }, // Wait for page to fully render
-        { screenshot: true }, // Take a screenshot of the initial view
-        { scroll: { y: 1000 } }, // Scroll down to load more content
-        { wait: 1000 }, // Wait for content to load after scrolling
-        { screenshot: { selector: "main, #main, .main, article, .article, .content, #content" } }, // Screenshot main content area
-        // Execute JavaScript to extract any dynamic content
-        { executeJavascript: "return { dynamicContent: document.body.innerText, pageTitle: document.title, metaTags: Array.from(document.querySelectorAll('meta')).map(m => ({ name: m.getAttribute('name'), content: m.getAttribute('content') })) }" }
-      ]
+        { type: "wait", milliseconds: 2000 },
+        { type: "screenshot" }
+      ],
+      location: {
+        country: "US",
+        languages: ["en-US"]
+      },
+      jsonOptions: {
+        schema: extractionSchema,
+        systemPrompt: "You are an assistant that extracts detailed class action lawsuit information.",
+        prompt: "Extract very detailed and comprehensive information about this class action lawsuit, including specific settlement amounts, exact payout figures, precise filing/claim deadlines, all eligibility criteria, list of participating law firms, settlement administrators, case numbers, court information, and any other critical details relevant to joining this lawsuit."
+      }
     };
     
     console.log('[FIRECRAWL API] Sending request with options:', JSON.stringify(scrapingOptions, null, 2));
@@ -128,41 +134,51 @@ app.post('/api/firecrawl', express.json(), async (req, res) => {
     const data = await firecrawlRes.json();
     console.log('[FIRECRAWL API] Successful response status:', firecrawlRes.status);
     
-    // Process and clean up the response with all available data
+    // Extract from nested data.data if present (Firecrawl spec)
+    let firecrawl = data;
+    if (data.success === true && typeof data.data === 'object') {
+      firecrawl = data.data;
+    }
+    
+    // Extract JSON data if available
+    let extractData = {};
+    if (firecrawl.llm_extraction) {
+      extractData = firecrawl.llm_extraction;
+    }
+    
+    // Get metadata
+    const metadata = firecrawl.metadata || {};
+    
+    // Process text for better display
     const processedData = {
       // Basic info
-      title: data.extraction?.title || data.title || '',
-      text: data.markdown || (data.data?.markdown) || '',
-      html: data.html || (data.data?.html) || '',
-      links: data.links || (data.data?.links) || [],
+      title: extractData.title || metadata.title || firecrawl.title || '',
+      text: firecrawl.markdown || '',
+      html: firecrawl.html || firecrawl.rawHtml || '',
+      links: firecrawl.links || [],
       
-      // Extracted lawsuit details
-      payout: data.extraction?.payout || '',
-      participants: data.extraction?.participants || '',
-      deadline: data.extraction?.deadline || '',
-      lawFirm: data.extraction?.lawFirm || '',
-      eligibility: data.extraction?.eligibility || '',
-      caseNumber: data.extraction?.caseNumber || '',
-      courtInfo: data.extraction?.courtInfo || '',
-      summary: data.extraction?.summary || '',
-      status: data.extraction?.status || '',
+      // Extracted lawsuit details (from jsonOptions extraction)
+      payout: extractData.payout || '',
+      participants: extractData.participants || '',
+      deadline: extractData.deadline || '',
+      lawFirm: extractData.lawFirm || '',
+      eligibility: extractData.eligibility || '',
+      caseNumber: extractData.caseNumber || '',
+      courtInfo: extractData.courtInfo || '',
+      summary: extractData.summary || metadata.description || '',
+      status: extractData.status || '',
       
       // Website preview data
-      screenshot: data.screenshot || (data.data?.screenshot) || '',
-      screenshotContentArea: data.actions?.screenshots?.[1] || data.actions?.screenshots?.[0] || '',
+      screenshot: firecrawl.screenshot || '',
+      metadata: metadata,
       
-      // Additional context
-      metadata: data.metadata || (data.data?.metadata) || {},
-      javascript: {
-        pageTitle: data.actions?.jsResults?.[0]?.pageTitle || '',
-        dynamicContent: data.actions?.jsResults?.[0]?.dynamicContent || '',
-        metaTags: data.actions?.jsResults?.[0]?.metaTags || []
-      },
+      // Raw text field - ensures we display something in the preview even if extraction fails
+      rawText: firecrawl.markdown || metadata.description || metadata.fullText || '',
       
       // Raw response for advanced processing
       raw: data
     };
-    
+
     return res.status(200).json(processedData);
   } catch (error) {
     console.error('[FIRECRAWL API] Proxy error:', error);

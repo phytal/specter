@@ -60,6 +60,7 @@ export interface FirecrawlContext {
   screenshotContentArea?: string;
   links?: string[];
   html?: string;
+  rawText?: string; // New field for guaranteed text content
 
   // Additional context
   metadata?: Record<string, unknown>;
@@ -91,6 +92,8 @@ interface ClassMatchingProps {
     context: FirecrawlContext | null;
     match: ClassMatch | null;
   }) => void;
+  onFirecrawlResultsUpdate: (results: Record<string, FirecrawlContext>) => void;
+  onLoadingUpdate: (isLoading: boolean) => void; // Add this prop
 }
 
 const ClassMatching: React.FC<ClassMatchingProps> = ({
@@ -103,11 +106,20 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
   firecrawlProgress = 0,
   rawContextModal,
   setRawContextModal,
+  onFirecrawlResultsUpdate,
+  onLoadingUpdate, // Destructure the new prop
 }) => {
   const [hoveredMatch, setHoveredMatch] = useState<string | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(true); // Loading state starts as true
+  const [pendingRequests, setPendingRequests] = useState(0); // Track number of pending requests
   const [localFirecrawlResults, setLocalFirecrawlResults] =
     useState<Record<string, FirecrawlContext>>(firecrawlResults);
+
+  // Report loading state changes up to the parent
+  useEffect(() => {
+    onLoadingUpdate(isLoading);
+  }, [isLoading, onLoadingUpdate]);
 
   // Load cached data from localStorage on component mount
   useEffect(() => {
@@ -132,9 +144,27 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
         return match && match.id && match.name && match.description;
       });
 
+      // Set initial pending request count and loading state
+      const requestsToMake = validMatches.filter(
+        (match) => match.url && !localFirecrawlResults[match.id] // Check against local state
+      ).length;
+      setPendingRequests(requestsToMake);
+      setIsLoading(requestsToMake > 0);
+
+      // If no requests to make, we're done loading
+      if (requestsToMake === 0) {
+        setIsLoading(false);
+        // If no requests needed, ensure parent has the current (potentially cached) results
+        onFirecrawlResultsUpdate(localFirecrawlResults);
+        return;
+      }
+
+      let updatedResults = { ...localFirecrawlResults }; // Work with a local copy within the effect
+      let requestsCompleted = 0;
+
       // For each valid match, check if we need to fetch Firecrawl data
       for (const match of validMatches) {
-        if (match.url && !firecrawlResults[match.id]) {
+        if (match.url && !localFirecrawlResults[match.id]) {
           try {
             console.log(
               `[Firecrawl] Fetching data for ${match.id} with URL:`,
@@ -215,12 +245,27 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
               match.firecrawlContext = context;
 
               // Update local state and cache in localStorage
-              const updatedResults = {
-                ...localFirecrawlResults,
-                [match.id]: context,
-              };
-              setLocalFirecrawlResults(updatedResults);
-
+              updatedResults[match.id] = context; // Update the local copy
+            } else {
+              // Handle fetch error, maybe add an error context
+              updatedResults[match.id] = { error: `Failed to fetch: ${resp.statusText}` };
+            }
+          } catch (e: any) {
+            console.error(
+              `[Firecrawl] Error fetching data for ${match.id}:`,
+              e
+            );
+            // Add error context on exception
+            updatedResults[match.id] = { error: `Fetch exception: ${e.message}` };
+          } finally {
+            // Decrement pending requests count after each request completes (success or failure)
+            requestsCompleted++;
+            setPendingRequests((prev) => prev - 1);
+            // Check if all requests (that were initially needed) are done
+            if (requestsCompleted === requestsToMake) {
+              setIsLoading(false);
+              setLocalFirecrawlResults(updatedResults); // Update local state
+              onFirecrawlResultsUpdate(updatedResults); // Pass final results up
               // Cache to localStorage
               try {
                 localStorage.setItem(
@@ -231,11 +276,6 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
                 console.error("[Firecrawl] Error caching data:", e);
               }
             }
-          } catch (e) {
-            console.error(
-              `[Firecrawl] Error fetching data for ${match.id}:`,
-              e
-            );
           }
         }
       }
@@ -248,7 +288,16 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
 
   return (
     <div>
-      {matches.length === 0 ? (
+      {isLoading ? (
+        // Full-page loading screen while Firecrawl data is being fetched
+        <div className="flex flex-col items-center justify-center p-12 space-y-4 min-h-[400px]">
+          <Loader className="h-8 w-8 animate-spin text-teal-600" />
+          <p className="text-lg font-medium">Loading class action data...</p>
+          <p className="text-sm text-gray-500">
+            Fetching information from {pendingRequests} {pendingRequests === 1 ? 'source' : 'sources'}
+          </p>
+        </div>
+      ) : matches.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-12 space-y-4">
           <p className="text-lg font-medium">No matching class actions found</p>
           <Button
@@ -386,8 +435,14 @@ const ClassMatching: React.FC<ClassMatchingProps> = ({
                                 <Button
                                   variant="ghost"
                                   className="text-xs text-gray-500 border border-gray-200 px-2 py-1 hover:bg-gray-50"
-                                  onMouseEnter={() => setHoveredMatch(match.id)}
-                                  onMouseLeave={() => setHoveredMatch(null)}
+                                  onClick={() => {
+                                    // Open modal with match context instead of tooltip
+                                    setRawContextModal({
+                                      open: true,
+                                      context: context,
+                                      match: match
+                                    });
+                                  }}
                                 >
                                   🔎 View Raw Context
                                 </Button>

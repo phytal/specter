@@ -1,5 +1,5 @@
 // import { useEffect, useState } from "react";
-// import { Fact, ClassMatch } from "@/lib/mockData";
+// import { ClassMatch } from "@/lib/mockData";
 
 // // Define types for SerpApi response
 // interface OrganicResult {
@@ -27,7 +27,7 @@
 //  * @param facts List of extracted facts from the user's document
 //  * @param enabled Whether to run the search (should be true only for step 3)
 //  */
-// export function useSerpApiClassMatches(facts: Fact[], enabled: boolean) {
+// export function useSerpApiClassMatches(pdfText: string, enabled: boolean) {
 //   const [matches, setMatches] = useState<ClassMatch[]>([]);
 //   const [loading, setLoading] = useState(false);
 //   const [error, setError] = useState<string | null>(null);
@@ -159,13 +159,13 @@
 //         .catch((err) => setError(err.message || "Unexpected error"))
 //         .finally(() => setLoading(false));
 //     });
-//   }, [facts, enabled]);
+//   }, [pdfText, enabled]);
 
 //   return { matches, loading, error };
 // }
 
 import { useEffect, useState } from "react";
-import { Fact, ClassMatch } from "@/lib/mockData";
+import { ClassMatch } from "@/lib/mockData";
 
 // Define types for SerpApi response
 interface OrganicResult {
@@ -177,18 +177,18 @@ interface OrganicResult {
   description?: string;
 }
 
-export function useSerpApiClassMatches(facts: Fact[], enabled: boolean) {
+export function useSerpApiClassMatches(pdfText: string, enabled: boolean) {
   const [matches, setMatches] = useState<ClassMatch[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !pdfText) return;
 
     setLoading(true);
     setError(null);
 
-    fetch("/api/class-actions")
+    fetch(`/api/class-actions?query=${encodeURIComponent(pdfText)}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch class actions");
         return res.json();
@@ -215,7 +215,7 @@ export function useSerpApiClassMatches(facts: Fact[], enabled: boolean) {
       })
       .catch((err) => setError(err.message || "Unexpected error"))
       .finally(() => setLoading(false));
-  }, [facts, enabled]);
+  }, [pdfText, enabled]);
 
   return { matches, loading, error };
 }

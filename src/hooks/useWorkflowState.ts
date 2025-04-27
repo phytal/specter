@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   generateMockFacts,
@@ -20,6 +19,7 @@ export const useWorkflowState = () => {
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [complaintSections, setComplaintSections] = useState<ComplaintSection[]>([]);
   const [exportFiles, setExportFiles] = useState<ExportFile[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const handleNextStep = () => {
     if (currentStep >= 5) return;
@@ -27,9 +27,7 @@ export const useWorkflowState = () => {
     setIsProcessing(true);
     
     setTimeout(() => {
-      if (currentStep === 1 && uploadedFiles.length > 0) {
-        setFacts(generateMockFacts());
-      } else if (currentStep === 2) {
+      if (currentStep === 2) {
         setClassMatches(generateMockClassMatches());
       } else if (currentStep === 3 && selectedClassId) {
         setComplaintSections(generateMockComplaintSections());
@@ -75,6 +73,8 @@ export const useWorkflowState = () => {
     complaintSections,
     setComplaintSections,
     exportFiles,
+    searchQuery,
+    setSearchQuery,
     handleNextStep,
     handlePreviousStep,
     handleSectionUpdate,

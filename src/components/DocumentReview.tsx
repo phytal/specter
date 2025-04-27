@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -22,7 +22,30 @@ interface DocumentReviewProps {
   onFactsUpdate: (facts: Fact[]) => void;
   onRerunExtraction: () => void;
   isProcessing: boolean;
+  jsonPreview?: string | null;
 }
+
+// const DocumentReview: React.FC<DocumentReviewProps> = ({
+//   documentName,
+//   documentUrl,
+//   extractedFacts,
+//   onFactsUpdate,
+//   onRerunExtraction,
+//   isProcessing,
+
+// }) => {
+//   const [facts, setFacts] = useState<Fact[]>(extractedFacts);
+//   useEffect(() => {
+//     setFacts(extractedFacts);
+//   }, [extractedFacts]);
+
+//   const handleFactChange = (id: string, value: string) => {
+//     const updatedFacts = facts.map((fact) =>
+//       fact.id === id ? { ...fact, value, isEdited: true } : fact
+//     );
+//     setFacts(updatedFacts);
+//     onFactsUpdate(updatedFacts);
+//   };
 
 const DocumentReview: React.FC<DocumentReviewProps> = ({
   documentName,
@@ -31,6 +54,7 @@ const DocumentReview: React.FC<DocumentReviewProps> = ({
   onFactsUpdate,
   onRerunExtraction,
   isProcessing,
+  jsonPreview,
 }) => {
   const [facts, setFacts] = useState<Fact[]>(extractedFacts);
 
@@ -52,11 +76,11 @@ const DocumentReview: React.FC<DocumentReviewProps> = ({
         </div>
         <div className="flex-1 bg-white border border-gray-200 rounded-b-lg flex items-center justify-center">
           {documentUrl ? (
-            <iframe
-              src={documentUrl}
-              className="w-full h-full rounded-b-lg"
-              title={documentName}
-            />
+                       <iframe
+                       src={documentUrl}
+                       className="w-full h-full rounded-b-lg"
+                       title={documentName}
+                     />
           ) : (
             <div className="text-center text-gray-500">
               <p>Document preview not available</p>
@@ -101,6 +125,7 @@ const DocumentReview: React.FC<DocumentReviewProps> = ({
             </div>
 
             <Separator className="my-4" />
+
 
             <div className="space-y-4">
               {facts.map((fact) => (

@@ -1,4 +1,3 @@
-
 import React from "react";
 import ClassMatchingContainer from "@/components/ClassMatching";
 import { ClassMatch } from "@/lib/mockData";
@@ -25,6 +24,8 @@ interface ClassMatchingStepProps {
     context: FirecrawlContext | null;
     match: ClassMatch | null;
   }) => void;
+  onFirecrawlResultsUpdate: (results: Record<string, FirecrawlContext>) => void;
+  onLoadingUpdate: (isLoading: boolean) => void;
 }
 
 const ClassMatchingStep: React.FC<ClassMatchingStepProps> = ({
@@ -39,6 +40,8 @@ const ClassMatchingStep: React.FC<ClassMatchingStepProps> = ({
   firecrawlProgress,
   rawContextModal,
   setRawContextModal,
+  onFirecrawlResultsUpdate,
+  onLoadingUpdate,
 }) => {
   return (
     <div className="max-w-4xl mx-auto">
@@ -62,6 +65,8 @@ const ClassMatchingStep: React.FC<ClassMatchingStepProps> = ({
         firecrawlProgress={firecrawlProgress}
         rawContextModal={rawContextModal}
         setRawContextModal={setRawContextModal}
+        onFirecrawlResultsUpdate={onFirecrawlResultsUpdate}
+        onLoadingUpdate={onLoadingUpdate}
       />
     </div>
   );
