@@ -12,7 +12,7 @@ const Landing = () => {
         <div className="text-center max-w-4xl mx-auto">
           <h1 className="text-6xl font-bold tracking-tight mb-6">
             <span className="bg-gradient-to-r from-teal-700 to-teal-500 bg-clip-text text-transparent">
-              Class-Action Copilot
+              Specter
             </span>
             <span className="text-4xl block mt-2 text-muted-foreground">
               Justice, On Your Device
@@ -133,7 +133,7 @@ const Landing = () => {
       <footer className="border-t py-8 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between text-sm text-muted-foreground">
-            <p>Class-Action Copilot © 2025 · Built at RiverHacks · Not legal advice</p>
+            <p>Specter © 2025 · Built at RiverHacks · Not legal advice</p>
             <div className="flex items-center gap-4 mt-4 md:mt-0">
               <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-teal-700">
                 <Github className="w-5 h-5" />

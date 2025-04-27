@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -11,6 +10,7 @@ import ComplaintDraftStep from "@/components/steps/ComplaintDraftStep";
 import ExportPackageStep from "@/components/steps/ExportPackageStep";
 import { Step } from "@/components/WorkflowSidebar";
 import { Fact } from "@/lib/mockData";
+import { openai } from "@/lib/openai";
 
 interface WorkflowStepsProps {
   currentStep: number;
@@ -25,7 +25,6 @@ interface WorkflowStepsProps {
   selectedClassId: string | null;
   complaintSections: any[];
   onSectionUpdate: (id: string, content: string) => void;
-  onRegenerateSection: (id: string) => void;
   exportFiles: any[];
   onDownload: (fileType: "complaint" | "exhibits" | "all") => void;
   onPreview: () => void;
@@ -44,7 +43,6 @@ const WorkflowSteps: React.FC<WorkflowStepsProps & { onNext: () => void; onPrevi
   selectedClassId,
   complaintSections,
   onSectionUpdate,
-  onRegenerateSection,
   exportFiles,
   onDownload,
   onPreview,
@@ -58,6 +56,7 @@ const WorkflowSteps: React.FC<WorkflowStepsProps & { onNext: () => void; onPrevi
       case 2:
         return (
           <DocumentReviewStep
+            file={uploadedFiles[0]}
             documentName={uploadedFiles[0]?.name || "Document.pdf"}
             facts={facts}
             onFactsUpdate={onFactsUpdate}
@@ -83,8 +82,26 @@ const WorkflowSteps: React.FC<WorkflowStepsProps & { onNext: () => void; onPrevi
           <ComplaintDraftStep
             sections={complaintSections}
             onSectionUpdate={onSectionUpdate}
-            onRegenerateSection={onRegenerateSection}
             isGenerating={isProcessing}
+            onRegenerateSection={async (id: string) => {
+              toast("Regenerating section", { description: "This may take a moment..." });
+              try {
+                const section = complaintSections.find((s) => s.id === id);
+                const prompt = `Draft complaint section '${section?.title}' using facts: ${JSON.stringify(facts)}`;
+                const res = await openai.chat.completions.create({
+                  model: "webai-llm",
+                  // model: "llama-3.3-70b-versatile",
+                  messages: [{ role: "user", content: prompt }],
+                  stream: false,
+                });
+                const text = res.choices?.[0]?.message?.content || "";
+                onSectionUpdate(id, text);
+                toast.success("Section regenerated");
+              } catch (err) {
+                console.error("LLM complaint draft error:", err);
+                toast.error("Regeneration failed");
+              }
+            }}
           />
         );
       case 5:
@@ -118,7 +135,7 @@ const WorkflowSteps: React.FC<WorkflowStepsProps & { onNext: () => void; onPrevi
         </div>
         <div className="pt-4 border-t text-center text-sm text-gray-500 mt-auto">
           <p>
-            Class-Action Copilot processes all data on-device for privacy.
+            Specter processes all data on-device for privacy.
             Always consult with a licensed attorney before legal filings.
           </p>
         </div>

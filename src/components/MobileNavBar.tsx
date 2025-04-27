@@ -26,7 +26,7 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
     <div className="md:hidden w-full">
       <div className="bg-teal-700 text-white p-4 flex items-center justify-between">
         <div>
-          <h1 className="font-bold">Class-Action Copilot</h1>
+          <h1 className="font-bold">Specter</h1>
           <p className="text-xs opacity-80">Step {currentStep}: {currentStepObj?.name}</p>
         </div>
         <Button

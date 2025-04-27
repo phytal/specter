@@ -49,7 +49,7 @@ const WorkflowNavigation: React.FC<WorkflowNavigationProps> = ({
           <Button
             onClick={() => {
               toast.success("Process completed!", {
-                description: "Thank you for using Class-Action Copilot.",
+                description: "Thank you for using Specter.",
               });
             }}
             className="px-8 bg-amber hover:bg-amber-600 text-white"

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -73,25 +72,31 @@ const DocumentReview: React.FC<DocumentReviewProps> = ({
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium">Extracted Information</h3>
               <div className="flex items-center">
-                {anyFactEdited && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onRerunExtraction}
-                    disabled={isProcessing}
-                    className="text-sm mr-2"
-                  >
-                    {isProcessing ? (
-                      <Loader className="h-4 w-4 mr-1 animate-spin" />
-                    ) : (
-                      "Re-run Extraction"
-                    )}
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onRerunExtraction}
+                  disabled={isProcessing}
+                  className="text-sm mr-2"
+                >
+                  {isProcessing ? (
+                    <Loader className="h-4 w-4 mr-1 animate-spin" />
+                  ) : facts.length === 0 ? (
+                    "Run Extraction"
+                  ) : (
+                    "Re-run Extraction"
+                  )}
+                </Button>
                 <span className="text-xs text-gray-500">
-                  {anyFactEdited ? "Edited" : "Auto-extracted"}
+                  {facts.length === 0
+                    ? "Not extracted"
+                    : anyFactEdited
+                    ? "Edited"
+                    : "Auto-extracted"}
                 </span>
-                {!anyFactEdited && <Check className="h-4 w-4 text-green-500 ml-1" />}
+                {facts.length > 0 && !anyFactEdited && (
+                  <Check className="h-4 w-4 text-green-500 ml-1" />
+                )}
               </div>
             </div>
 

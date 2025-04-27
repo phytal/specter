@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { WorkflowSidebar, Step } from "@/components/WorkflowSidebar";
@@ -143,7 +142,6 @@ const Index = () => {
           selectedClassId={selectedClassId}
           complaintSections={complaintSections}
           onSectionUpdate={handleSectionUpdate}
-          onRegenerateSection={handleRegenerateSection}
           exportFiles={exportFiles}
           onDownload={handleDownload}
           onPreview={handlePreview}

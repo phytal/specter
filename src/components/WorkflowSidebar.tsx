@@ -24,7 +24,7 @@ export const WorkflowSidebar: React.FC<WorkflowSidebarProps> = ({
   return (
     <div className="bg-teal-50 border-r border-teal-100 w-64 min-h-screen p-4 hidden md:block">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-teal-700">Class-Action Copilot</h1>
+        <h1 className="text-2xl font-bold text-teal-700">Specter</h1>
         <p className="text-sm text-teal-600 mt-1">Privacy-Preserving Legal Assistant</p>
       </div>
 

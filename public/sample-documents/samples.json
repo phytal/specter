@@ -1,0 +1,26 @@
+[
+  {
+    "id": "sample1",
+    "name": "Sample Document 1",
+    "description": "A sample PDF document for testing purposes",
+    "path": "/sample-documents/sample1.pdf",
+    "type": "application/pdf",
+    "size": 125000
+  },
+  {
+    "id": "sample2",
+    "name": "Sample Document 2",
+    "description": "Another sample PDF document for testing",
+    "path": "/sample-documents/sample2.pdf",
+    "type": "application/pdf",
+    "size": 150000
+  },
+  {
+    "id": "sample3",
+    "name": "Sample Document 3",
+    "description": "A third sample PDF document for testing",
+    "path": "/sample-documents/sample3.pdf",
+    "type": "application/pdf",
+    "size": 175000
+  }
+]
