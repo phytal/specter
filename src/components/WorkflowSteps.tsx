@@ -105,7 +105,31 @@ const WorkflowStepsComponent: React.FC<WorkflowStepsProps> = memo(
             <ComplaintDraftStep
               sections={complaintSections}
               onSectionUpdate={onSectionUpdate}
-              onRegenerateSection={onRegenerateSection}
+              onRegenerateSection={async (id: string) => {
+                toast("Regenerating section", { description: "This may take a moment..." });
+                try {
+                  const section = complaintSections.find((s) => s.id === id);
+                  const prompt = `Draft complaint section '${section?.title}' using facts: ${JSON.stringify(facts)}. The output should be formatted using Markdown.`;
+                  const stream = await openai.chat.completions.create({
+                    model: "webai-llm",
+                    // model: "llama-3.3-70b-versatile",
+                    messages: [{ role: "user", content: prompt }],
+                    stream: true,
+                  });
+                  let text = "";
+                  for await (const chunk of stream) {
+                    const choiceAny = chunk.choices?.[0] as any;
+                    const rawToken = choiceAny.delta?.content ?? choiceAny.message?.content ?? "";
+                    text += rawToken;
+                    // Update in real-time to show streaming
+                    onSectionUpdate(id, text);
+                  }
+                  toast.success("Section regenerated");
+                } catch (err) {
+                  console.error("LLM complaint draft error:", err);
+                  toast.error("Regeneration failed");
+                }
+              }}
               isGenerating={isProcessing}
             />
           );

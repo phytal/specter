@@ -47,10 +47,24 @@ export const useWorkflowState = () => {
     setCurrentStep(currentStep - 1);
   };
 
+  const handleSectionUpdate = (id: string, content: string) => {
+    setComplaintSections(
+      complaintSections.map((section) =>
+        section.id === id ? { ...section, content } : section
+      )
+    );
+  };
+
+  const handleRegenerateSection = async (id: string) => {
+    // This function is a placeholder, the actual implementation 
+    // with OpenAI streaming is in WorkflowSteps.tsx onRegenerateSection prop
+  };
+
   return {
     currentStep,
     setCurrentStep,
     isProcessing,
+    setIsProcessing,
     uploadedFiles,
     setUploadedFiles,
     facts,
@@ -63,5 +77,7 @@ export const useWorkflowState = () => {
     exportFiles,
     handleNextStep,
     handlePreviousStep,
+    handleSectionUpdate,
+    handleRegenerateSection,
   };
 };

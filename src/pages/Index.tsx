@@ -142,6 +142,7 @@ const Index = () => {
           selectedClassId={selectedClassId}
           complaintSections={complaintSections}
           onSectionUpdate={handleSectionUpdate}
+          onRegenerateSection={handleRegenerateSection}
           exportFiles={exportFiles}
           onDownload={handleDownload}
           onPreview={handlePreview}

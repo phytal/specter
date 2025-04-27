@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface ComplaintSection {
   id: string;
@@ -84,7 +85,9 @@ const ComplaintDraft: React.FC<ComplaintDraftProps> = ({
                 {sections.map((section, index) => (
                   <div key={section.id} className="mb-8">
                     <h2 className="text-xl font-semibold mb-2">{section.title}</h2>
-                    <div className="whitespace-pre-line">{section.content}</div>
+                    <div className="markdown-content">
+                      <ReactMarkdown>{section.content}</ReactMarkdown>
+                    </div>
                     {index < sections.length - 1 && <Separator className="my-6" />}
                   </div>
                 ))}
@@ -150,8 +153,8 @@ const ComplaintDraft: React.FC<ComplaintDraftProps> = ({
                   </div>
                 ) : (
                   <div className="prose max-w-none">
-                    <div className="whitespace-pre-line line-clamp-3">
-                      {section.content}
+                    <div className="line-clamp-3">
+                      <ReactMarkdown>{section.content}</ReactMarkdown>
                     </div>
                   </div>
                 )}
