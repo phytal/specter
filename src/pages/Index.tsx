@@ -1,35 +1,30 @@
+
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { WorkflowSidebar, Step } from "@/components/WorkflowSidebar";
 import MobileNavBar from "@/components/MobileNavBar";
-import {
-  generateMockFacts,
-  generateMockClassMatches,
-  generateMockComplaintSections,
-  generateMockExportFiles,
-  Fact,
-  ClassMatch,
-  ComplaintSection,
-  ExportFile,
-} from "@/lib/mockData";
-import UploadEvidenceStep from "@/components/steps/UploadEvidenceStep";
-import DocumentReviewStep from "@/components/steps/DocumentReviewStep";
-import ClassMatchingStep from "@/components/steps/ClassMatchingStep";
-import ComplaintDraftStep from "@/components/steps/ComplaintDraftStep";
-import ExportPackageStep from "@/components/steps/ExportPackageStep";
+import WorkflowSteps from "@/components/WorkflowSteps";
+import WorkflowNavigation from "@/components/WorkflowNavigation";
+import { useWorkflowState } from "@/hooks/useWorkflowState";
 
 const Index = () => {
-  const [currentStep, setCurrentStep] = useState(1);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [facts, setFacts] = useState<Fact[]>([]);
-  const [classMatches, setClassMatches] = useState<ClassMatch[]>([]);
-  const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
-  const [complaintSections, setComplaintSections] = useState<ComplaintSection[]>([]);
-  const [exportFiles, setExportFiles] = useState<ExportFile[]>([]);
+  const {
+    currentStep,
+    setCurrentStep,
+    isProcessing,
+    uploadedFiles,
+    setUploadedFiles,
+    facts,
+    setFacts,
+    selectedClassId,
+    setSelectedClassId,
+    complaintSections,
+    setComplaintSections,
+    exportFiles,
+    handleNextStep,
+    handlePreviousStep,
+  } = useWorkflowState();
 
   const steps: Step[] = [
     {
@@ -64,50 +59,11 @@ const Index = () => {
     },
   ];
 
-  const handleFilesSelected = (files: File[]) => {
-    setUploadedFiles(files);
-  };
-
-  const handleNextStep = () => {
-    if (currentStep >= steps.length) return;
-
-    setIsProcessing(true);
-    
-    setTimeout(() => {
-      if (currentStep === 1 && uploadedFiles.length > 0) {
-        setFacts(generateMockFacts());
-      } else if (currentStep === 2) {
-        setClassMatches(generateMockClassMatches());
-      } else if (currentStep === 3 && selectedClassId) {
-        setComplaintSections(generateMockComplaintSections());
-      } else if (currentStep === 4) {
-        setExportFiles(generateMockExportFiles());
-      }
-
-      setCurrentStep(currentStep + 1);
-      setIsProcessing(false);
-    }, 2000);
-  };
-
-  const handlePreviousStep = () => {
-    if (currentStep <= 1) return;
-    setCurrentStep(currentStep - 1);
-  };
-
   const handleStepClick = (step: number) => {
     if (step <= currentStep) {
       setCurrentStep(step);
       setIsMenuOpen(false);
     }
-  };
-
-  const handleFactsUpdate = (updatedFacts: Fact[]) => {
-    setFacts(updatedFacts);
-  };
-
-  const handleClassSelect = (classId: string) => {
-    setSelectedClassId(classId);
-    toast.success("Class action selected successfully!");
   };
 
   const handleCreateNewClass = () => {
@@ -157,92 +113,6 @@ const Index = () => {
     });
   };
 
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return <UploadEvidenceStep onFilesSelected={handleFilesSelected} />;
-      case 2:
-        return (
-          <DocumentReviewStep
-            documentName={uploadedFiles[0]?.name || "Document.pdf"}
-            facts={facts}
-            onFactsUpdate={handleFactsUpdate}
-            isProcessing={isProcessing}
-          />
-        );
-      case 3:
-        return (
-          <ClassMatchingStep
-            matches={classMatches}
-            selectedClassId={selectedClassId}
-            onClassSelect={handleClassSelect}
-            onCreateNewClass={handleCreateNewClass}
-            isProcessing={isProcessing}
-          />
-        );
-      case 4:
-        return (
-          <ComplaintDraftStep
-            sections={complaintSections}
-            onSectionUpdate={handleSectionUpdate}
-            onRegenerateSection={handleRegenerateSection}
-            isGenerating={isProcessing}
-          />
-        );
-      case 5:
-        return (
-          <ExportPackageStep
-            files={exportFiles}
-            onDownload={handleDownload}
-            onPreview={handlePreview}
-            isExporting={isProcessing}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
-  const renderNavigationButtons = () => {
-    return (
-      <div className="flex justify-between mt-8 pt-4 border-t">
-        <Button
-          variant="outline"
-          onClick={handlePreviousStep}
-          disabled={currentStep === 1 || isProcessing}
-          className="px-8"
-        >
-          Back
-        </Button>
-        
-        {currentStep < steps.length ? (
-          <Button
-            onClick={handleNextStep}
-            disabled={
-              (currentStep === 1 && uploadedFiles.length === 0) ||
-              (currentStep === 3 && !selectedClassId) ||
-              isProcessing
-            }
-            className="px-8 bg-teal-700 hover:bg-teal-800"
-          >
-            {isProcessing ? "Processing..." : "Next"}
-          </Button>
-        ) : (
-          <Button
-            onClick={() => {
-              toast.success("Process completed!", {
-                description: "Thank you for using Class-Action Copilot.",
-              });
-            }}
-            className="px-8 bg-amber hover:bg-amber-600 text-white"
-          >
-            Finish
-          </Button>
-        )}
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       <MobileNavBar
@@ -259,20 +129,34 @@ const Index = () => {
         onStepClick={handleStepClick}
       />
 
-      <div className="flex-1 p-4 md:p-8 overflow-y-auto flex flex-col min-h-screen">
-        <div className="container mx-auto flex flex-col flex-1">
-          <div className="flex-1">
-            {renderStepContent()}
-            {renderNavigationButtons()}
-          </div>
-          <div className="pt-4 border-t text-center text-sm text-gray-500 mt-auto">
-            <p>
-              Class-Action Copilot processes all data on-device for privacy.
-              Always consult with a licensed attorney before legal filings.
-            </p>
-          </div>
-        </div>
-      </div>
+      <WorkflowSteps
+        currentStep={currentStep}
+        steps={steps}
+        isProcessing={isProcessing}
+        uploadedFiles={uploadedFiles}
+        facts={facts}
+        onFilesSelected={setUploadedFiles}
+        onFactsUpdate={setFacts}
+        onClassSelect={setSelectedClassId}
+        onCreateNewClass={handleCreateNewClass}
+        selectedClassId={selectedClassId}
+        complaintSections={complaintSections}
+        onSectionUpdate={handleSectionUpdate}
+        onRegenerateSection={handleRegenerateSection}
+        exportFiles={exportFiles}
+        onDownload={handleDownload}
+        onPreview={handlePreview}
+      />
+
+      <WorkflowNavigation
+        currentStep={currentStep}
+        totalSteps={steps.length}
+        isProcessing={isProcessing}
+        uploadedFiles={uploadedFiles}
+        selectedClassId={selectedClassId}
+        onNext={handleNextStep}
+        onPrevious={handlePreviousStep}
+      />
     </div>
   );
 };

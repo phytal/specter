@@ -1,0 +1,113 @@
+
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import UploadEvidenceStep from "@/components/steps/UploadEvidenceStep";
+import DocumentReviewStep from "@/components/steps/DocumentReviewStep";
+import ClassMatchingStep from "@/components/steps/ClassMatchingStep";
+import ComplaintDraftStep from "@/components/steps/ComplaintDraftStep";
+import ExportPackageStep from "@/components/steps/ExportPackageStep";
+import { Step } from "@/components/WorkflowSidebar";
+import { Fact } from "@/lib/mockData";
+
+interface WorkflowStepsProps {
+  currentStep: number;
+  steps: Step[];
+  isProcessing: boolean;
+  uploadedFiles: File[];
+  facts: Fact[];
+  onFilesSelected: (files: File[]) => void;
+  onFactsUpdate: (facts: Fact[]) => void;
+  onClassSelect: (classId: string) => void;
+  onCreateNewClass: () => void;
+  selectedClassId: string | null;
+  complaintSections: any[];
+  onSectionUpdate: (id: string, content: string) => void;
+  onRegenerateSection: (id: string) => void;
+  exportFiles: any[];
+  onDownload: (fileType: "complaint" | "exhibits" | "all") => void;
+  onPreview: () => void;
+}
+
+const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
+  currentStep,
+  steps,
+  isProcessing,
+  uploadedFiles,
+  facts,
+  onFilesSelected,
+  onFactsUpdate,
+  onClassSelect,
+  onCreateNewClass,
+  selectedClassId,
+  complaintSections,
+  onSectionUpdate,
+  onRegenerateSection,
+  exportFiles,
+  onDownload,
+  onPreview,
+}) => {
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return <UploadEvidenceStep onFilesSelected={onFilesSelected} />;
+      case 2:
+        return (
+          <DocumentReviewStep
+            documentName={uploadedFiles[0]?.name || "Document.pdf"}
+            facts={facts}
+            onFactsUpdate={onFactsUpdate}
+            isProcessing={isProcessing}
+          />
+        );
+      case 3:
+        return (
+          <ClassMatchingStep
+            matches={[]}
+            selectedClassId={selectedClassId}
+            onClassSelect={onClassSelect}
+            onCreateNewClass={onCreateNewClass}
+            isProcessing={isProcessing}
+          />
+        );
+      case 4:
+        return (
+          <ComplaintDraftStep
+            sections={complaintSections}
+            onSectionUpdate={onSectionUpdate}
+            onRegenerateSection={onRegenerateSection}
+            isGenerating={isProcessing}
+          />
+        );
+      case 5:
+        return (
+          <ExportPackageStep
+            files={exportFiles}
+            onDownload={onDownload}
+            onPreview={onPreview}
+            isExporting={isProcessing}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="flex-1 p-4 md:p-8 overflow-y-auto flex flex-col min-h-screen">
+      <div className="container mx-auto flex flex-col flex-1">
+        <div className="flex-1">
+          {renderStepContent()}
+        </div>
+        <div className="pt-4 border-t text-center text-sm text-gray-500 mt-auto">
+          <p>
+            Class-Action Copilot processes all data on-device for privacy.
+            Always consult with a licensed attorney before legal filings.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default WorkflowSteps;
