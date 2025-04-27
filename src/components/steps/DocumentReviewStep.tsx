@@ -9,6 +9,7 @@ interface DocumentReviewStepProps {
   facts: Fact[];
   onFactsUpdate: (facts: Fact[]) => void;
   isProcessing: boolean;
+  uploadedFiles: File[];
 }
 
 const DocumentReviewStep: React.FC<DocumentReviewStepProps> = ({
@@ -16,6 +17,7 @@ const DocumentReviewStep: React.FC<DocumentReviewStepProps> = ({
   facts,
   onFactsUpdate,
   isProcessing,
+  uploadedFiles,
 }) => {
   return (
     <div className="max-w-6xl mx-auto">
@@ -26,6 +28,7 @@ const DocumentReviewStep: React.FC<DocumentReviewStepProps> = ({
       </p>
       <DocumentReview
         documentName={documentName}
+        documentUrl={URL.createObjectURL(uploadedFiles[0])}
         extractedFacts={facts}
         onFactsUpdate={onFactsUpdate}
         onRerunExtraction={() => {

@@ -16,6 +16,9 @@ export interface ClassMatch {
   description: string;
   matchConfidence: number;
   memberCount: number;
+  source: string;
+  datePosted?: string;
+  url: string;
 }
 
 export interface ComplaintSection {
@@ -81,29 +84,38 @@ export const generateMockFacts = (): Fact[] => {
 };
 
 // Generate mock class action matches
-export const generateMockClassMatches = (): ClassMatch[] => {
+export function generateMockClassMatches(): ClassMatch[] {
   return [
     {
-      id: "class-001",
-      name: "TechPro 5000 Battery Defect Class Action",
-      description: "Class action regarding TechPro 5000 tablet battery defects causing overheating and physical damage.",
-      matchConfidence: 0.92,
-      memberCount: 238,
+      id: uuidv4(),
+      name: "Data Privacy Class Action",
+      description: "Class action lawsuit regarding unauthorized data collection and sharing.",
+      matchConfidence: 0.85,
+      memberCount: 1200,
+      source: "privacylaw.com",
+      datePosted: "2025-03-15",
+      url: "https://example.com/privacy-case"
     },
     {
-      id: "class-002",
-      name: "TechGiant Warranty Denial Class Action",
-      description: "Class action regarding TechGiant's systematic denial of warranty claims for various electronics.",
-      matchConfidence: 0.76,
-      memberCount: 573,
+      id: uuidv4(),
+      name: "Consumer Protection Lawsuit",
+      description: "Lawsuit about misleading product claims and pricing practices.",
+      matchConfidence: 0.75,
+      memberCount: 800,
+      source: "consumerwatch.org",
+      datePosted: "2025-04-01",
+      url: "https://example.com/consumer-case"
     },
     {
-      id: "class-003",
-      name: "Consumer Electronics False Advertising Claim",
-      description: "Class action regarding misleading battery life claims across multiple consumer electronics brands.",
-      matchConfidence: 0.68,
-      memberCount: 1247,
-    }
+      id: uuidv4(),
+      name: "Employment Rights Case",
+      description: "Class action regarding unpaid overtime and labor law violations.",
+      matchConfidence: 0.65,
+      memberCount: 500,
+      source: "workersrights.net",
+      datePosted: "2025-04-10",
+      url: "https://example.com/employment-case"
+    },
   ];
 };
 

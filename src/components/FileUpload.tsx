@@ -13,6 +13,7 @@ interface FileUploadProps {
   acceptedFileTypes?: AcceptedFileType[];
 }
 
+
 const FileUpload: React.FC<FileUploadProps> = ({
   onFilesSelected,
   maxFiles = 10,
