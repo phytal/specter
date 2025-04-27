@@ -1,7 +1,9 @@
 
 import React from "react";
-import ClassMatching from "@/components/ClassMatching";
+import ClassMatchingContainer from "@/components/ClassMatching";
 import { ClassMatch } from "@/lib/mockData";
+
+import type { FirecrawlContext } from "@/components/ClassMatching";
 
 interface ClassMatchingStepProps {
   matches: ClassMatch[];
@@ -10,6 +12,19 @@ interface ClassMatchingStepProps {
   onCreateNewClass: () => void;
   isProcessing: boolean;
   error?: string | null;
+  onNext: () => void;
+  firecrawlResults?: Record<string, FirecrawlContext>;
+  firecrawlProgress?: number;
+  rawContextModal: {
+    open: boolean;
+    context: FirecrawlContext | null;
+    match: ClassMatch | null;
+  };
+  setRawContextModal: (modal: {
+    open: boolean;
+    context: FirecrawlContext | null;
+    match: ClassMatch | null;
+  }) => void;
 }
 
 const ClassMatchingStep: React.FC<ClassMatchingStepProps> = ({
@@ -19,6 +34,11 @@ const ClassMatchingStep: React.FC<ClassMatchingStepProps> = ({
   onCreateNewClass,
   isProcessing,
   error,
+  onNext,
+  firecrawlResults,
+  firecrawlProgress,
+  rawContextModal,
+  setRawContextModal,
 }) => {
   return (
     <div className="max-w-4xl mx-auto">
@@ -32,12 +52,16 @@ const ClassMatchingStep: React.FC<ClassMatchingStepProps> = ({
           {error}
         </div>
       )}
-      <ClassMatching
-        possibleMatches={matches}
+      <ClassMatchingContainer
+        matches={matches}
         selectedClassId={selectedClassId}
         onClassSelect={onClassSelect}
         onCreateNewClass={onCreateNewClass}
-        isProcessing={isProcessing}
+        onNext={onNext}
+        firecrawlResults={firecrawlResults}
+        firecrawlProgress={firecrawlProgress}
+        rawContextModal={rawContextModal}
+        setRawContextModal={setRawContextModal}
       />
     </div>
   );

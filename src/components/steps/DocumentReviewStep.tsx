@@ -37,6 +37,7 @@ const DocumentReviewStep: React.FC<DocumentReviewStepProps> = ({
       </p>
       <DocumentReview
         documentName={documentName}
+        documentUrl={file ? URL.createObjectURL(file) : undefined}
         extractedFacts={facts}
         onFactsUpdate={onFactsUpdate}
         onRerunExtraction={async () => {
@@ -52,8 +53,13 @@ const DocumentReviewStep: React.FC<DocumentReviewStepProps> = ({
             });
             let text = "";
             for await (const chunk of stream) {
-              const choiceAny = chunk.choices?.[0] as any;
-              const rawToken = choiceAny.delta?.content ?? choiceAny.message?.content ?? "";
+              type OpenAIChatChoice = {
+                delta?: { content?: string };
+                message?: { content?: string };
+                // Add other fields if needed
+              };
+              const choice = chunk.choices?.[0] as OpenAIChatChoice;
+              const rawToken = choice.delta?.content ?? choice.message?.content ?? "";
               text += rawToken;
             }
             let newFacts: Fact[] = [];
